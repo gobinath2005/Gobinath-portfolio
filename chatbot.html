@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOBINATH D - Portfolio Chatbot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1c86a0;
+            --secondary: #3f6e98;
+            --accent: #ff7a59;
+            --bg-dark: #1a1a2e;
+            --bg-light: #16213e;
+            --text-light: #eaeaea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chatbot-container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .chat-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 10px;
+            object-fit: cover;
+        }
+
+        .chat-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bot-message {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-message {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-light);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .quick-replies {
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .quick-reply-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-light);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .quick-reply-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .chat-input-container {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 12px 20px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(28, 134, 160, 0.3);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(28, 134, 160, 0.4);
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            padding: 15px 20px;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .portfolio-link {
+            color: #22c1c3;
+            text-decoration: none;
+        }
+
+        .portfolio-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .chat-messages {
+                height: 350px;
+            }
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <div class="chat-header">
+            <img src="gobss-img.jpeg" alt="GOBINATH D" onerror="this.src='https://ui-avatars.com/api/?name=GD&background=1c86a0&color=fff&size=128'">
+            <h2>GOBINATH D</h2>
+            <p>AI & Data Analyst | AIML Developer</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                Hello! 👋 I'm GOBINATH's portfolio assistant. Ask me anything about his skills, projects, education, or experience!
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div class="quick-replies">
+            <button class="quick-reply-btn" onclick="askQuestion('Who is Gobinath?')">👤 Who is Gobinath?</button>
+            <button class="quick-reply-btn" onclick="askQuestion('What are your skills?')">💻 Skills</button>
+            <button class="quick-reply-btn" onclick="askQuestion('Tell me about your projects')">📂 Projects</button>
+            <button class="quick-reply-btn" onclick="askQuestion('What is your education?')">🎓 Education</button>
+            <button class="quick-reply-btn" onclick="askQuestion('Work experience')">💼 Experience</button>
+            <button class="quick-reply-btn" onclick="askQuestion('How to contact you?')">📞 Contact</button>
+        </div>
+
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="userInput" placeholder="Ask me anything about Gobinath..." onkeypress="handleKeyPress(event)">
+            <button class="send-btn" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Portfolio Data
+        const portfolioData = {
+            name: "GOBINATH D",
+            title: "AI & Data Analyst | AIML Developer | AWS Cloud Enthusiast",
+            email: "gobinathdhandapani1712@gmail.com",
+            phone: "+91 6382932242",
+            linkedin: "https://www.linkedin.com/in/gobinath-d-94621a257/",
+            github: "https://github.com/gobinath2005",
+            
+            about: `I am an AI & Data Science undergraduate at K.S. Rangasamy College of Technology with hands-on experience as an AI & Data Analyst and AIML Developer. 
+            
+I build and deploy machine learning solutions, work with data to derive meaningful insights, and leverage AWS for scalable cloud-based applications. 
+
+I am actively learning MLOps and applied deep learning to build production-ready AI systems. I am open to project collaborations and internship opportunities where I can contribute and grow as a developer.`,
+            
+            education: {
+                degree: "B.Tech in Artificial Intelligence & Data Science",
+                college: "K.S. Rangasamy College of Technology",
+                year: "Currently in 3rd Year"
+            },
+            
+            skills: [
+                "Java",
+                "Python", 
+                "HTML & CSS",
+                "JavaScript",
+                "MySQL",
+                "Git & GitHub",
+                "Bootstrap",
+                "N8N (Workflow Automation)",
+                "Data Analysis",
+                "Machine Learning",
+                "AWS Cloud"
+            ],
+            
+            projects: [
+                {
+                    name: "E-Commerce Platform",
+                    description: "A full-stack e-commerce application with user authentication, product catalog, and payment integration.",
+                    tech: ["React", "Node.js", "MongoDB"]
+                },
+                {
+                    name: "Task Management App",
+                    description: "A real-time collaborative task management tool with drag-and-drop functionality and team collaboration features.",
+                    tech: ["React", "Firebase", "CSS"]
+                },
+                {
+                    name: "Weather Dashboard",
+                    description: "A responsive weather application that displays real-time weather data and forecasts using a third-party API.",
+                    tech: ["JavaScript", "API", "HTML/CSS"]
+                }
+            ],
+            
+            experience: [
+                {
+                    role: "AI/ML Developer Intern",
+                    company: "Cube AI Solution Company",
+                    duration: "1 Month",
+                    description: "Worked on artificial intelligence and machine learning projects, developing and optimizing AI models. Collaborated with experienced professionals to implement cutting-edge ML solutions."
+                },
+                {
+                    role: "AWS & DevOps Workshop",
+                    company: "Greens Technologies",
+                    duration: "August 21–24, 2025",
+                    description: "Participated in a 3-day immersive workshop on cloud architecture, DevOps workflows, and real-world deployment strategies. Gained hands-on exposure to AWS services."
+                }
+            ]
+        };
+
+        // Response Generator
+        function generateResponse(question) {
+            const q = question.toLowerCase();
+            
+            // About / Who
+            if (q.includes('who') || q.includes('about') || q.includes('yourself') || q.includes('introduce') || q.includes('gobinath')) {
+                return `<b>About GOBINATH D:</b><br><br>${portfolioData.about.replace(/\n/g, '<br>')}`;
+            }
+            
+            // Skills
+            if (q.includes('skill') || q.includes('technology') || q.includes('tech stack') || q.includes('know') || q.includes('programming')) {
+                return `<b>🛠️ Technical Skills:</b><br><br>` + 
+                    portfolioData.skills.map(s => `• ${s}`).join('<br>') +
+                    `<br><br>I'm constantly learning new technologies and currently focusing on MLOps and Deep Learning!`;
+            }
+            
+            // Projects
+            if (q.includes('project') || q.includes('work') || q.includes('built') || q.includes('create') || q.includes('develop')) {
+                let response = `<b>📂 My Projects:</b><br><br>`;
+                portfolioData.projects.forEach((p, i) => {
+                    response += `<b>${i+1}. ${p.name}</b><br>`;
+                    response += `${p.description}<br>`;
+                    response += `<i>Tech: ${p.tech.join(', ')}</i><br><br>`;
+                });
+                return response;
+            }
+            
+            // Education
+            if (q.includes('education') || q.includes('study') || q.includes('college') || q.includes('university') || q.includes('degree') || q.includes('qualification')) {
+                return `<b>🎓 Education:</b><br><br>` +
+                    `<b>Degree:</b> ${portfolioData.education.degree}<br>` +
+                    `<b>College:</b> ${portfolioData.education.college}<br>` +
+                    `<b>Status:</b> ${portfolioData.education.year}`;
+            }
+            
+            // Experience
+            if (q.includes('experience') || q.includes('intern') || q.includes('job') || q.includes('company') || q.includes('workshop')) {
+                let response = `<b>💼 Experience:</b><br><br>`;
+                portfolioData.experience.forEach((e, i) => {
+                    response += `<b>${i+1}. ${e.role}</b><br>`;
+                    response += `📍 ${e.company} | ⏱️ ${e.duration}<br>`;
+                    response += `${e.description}<br><br>`;
+                });
+                return response;
+            }
+            
+            // Contact
+            if (q.includes('contact') || q.includes('email') || q.includes('phone') || q.includes('reach') || q.includes('connect') || q.includes('hire')) {
+                return `<b>📞 Contact Information:</b><br><br>` +
+                    `📧 <b>Email:</b> <a href="mailto:${portfolioData.email}" class="portfolio-link">${portfolioData.email}</a><br><br>` +
+                    `📱 <b>Phone:</b> <a href="tel:${portfolioData.phone}" class="portfolio-link">${portfolioData.phone}</a><br><br>` +
+                    `💼 <b>LinkedIn:</b> <a href="${portfolioData.linkedin}" target="_blank" class="portfolio-link">Connect on LinkedIn</a><br><br>` +
+                    `🐙 <b>GitHub:</b> <a href="${portfolioData.github}" target="_blank" class="portfolio-link">View GitHub Profile</a>`;
+            }
+            
+            // LinkedIn
+            if (q.includes('linkedin')) {
+                return `<b>LinkedIn Profile:</b><br><br>` +
+                    `<a href="${portfolioData.linkedin}" target="_blank" class="portfolio-link">${portfolioData.linkedin}</a><br><br>` +
+                    `Feel free to connect with me!`;
+            }
+            
+            // GitHub
+            if (q.includes('github') || q.includes('code') || q.includes('repository')) {
+                return `<b>GitHub Profile:</b><br><br>` +
+                    `<a href="${portfolioData.github}" target="_blank" class="portfolio-link">${portfolioData.github}</a><br><br>` +
+                    `Check out my projects and contributions!`;
+            }
+            
+            // Name
+            if (q.includes('name') || q.includes('call')) {
+                return `My name is <b>GOBINATH D</b>. I'm an ${portfolioData.title}.`;
+            }
+            
+            // Resume/CV
+            if (q.includes('resume') || q.includes('cv')) {
+                return `You can download my resume from the main portfolio page. <br><br>` +
+                    `<a href="GOBI Resume.pdf" download class="portfolio-link">📄 Download Resume</a>`;
+            }
+            
+            // Location
+            if (q.includes('location') || q.includes('where') || q.includes('from') || q.includes('city') || q.includes('country')) {
+                return `I'm based in <b>Tamil Nadu, India</b> and currently studying at K.S. Rangasamy College of Technology.`;
+            }
+            
+            // Availability / Hire
+            if (q.includes('available') || q.includes('hiring') || q.includes('freelance') || q.includes('opportunity')) {
+                return `Yes! I'm open to:<br><br>` +
+                    `✅ Internship opportunities<br>` +
+                    `✅ Project collaborations<br>` +
+                    `✅ Freelance projects<br><br>` +
+                    `Feel free to reach out via email: <a href="mailto:${portfolioData.email}" class="portfolio-link">${portfolioData.email}</a>`;
+            }
+            
+            // Java
+            if (q.includes('java')) {
+                return `Yes, I know <b>Java</b>! It's one of my primary programming languages. I use it for building robust applications and learning core programming concepts.`;
+            }
+            
+            // Python
+            if (q.includes('python')) {
+                return `<b>Python</b> is my go-to language for AI/ML development, Data Analysis, and building automation workflows. I use it extensively with frameworks like TensorFlow, PyTorch, and data libraries like Pandas & NumPy.`;
+            }
+
+            // N8N
+            if (q.includes('n8n') || q.includes('automation') || q.includes('workflow')) {
+                return `I have experience with <b>N8N</b> - a powerful workflow automation tool. I use it to create automated workflows and integrate various services together.`;
+            }
+            
+            // ML/AI
+            if (q.includes('machine learning') || q.includes('ml') || q.includes('ai') || q.includes('artificial intelligence') || q.includes('deep learning')) {
+                return `As an AI & Data Science student, I specialize in:<br><br>` +
+                    `🤖 Machine Learning model development<br>` +
+                    `📊 Data Analysis & Visualization<br>` +
+                    `🧠 Deep Learning<br>` +
+                    `☁️ MLOps & Cloud deployment<br><br>` +
+                    `I've interned at Cube AI Solution Company where I worked on AI/ML projects.`;
+            }
+            
+            // AWS
+            if (q.includes('aws') || q.includes('cloud') || q.includes('devops')) {
+                return `I'm an <b>AWS Cloud Enthusiast!</b><br><br>` +
+                    `I attended an AWS & DevOps Workshop at Greens Technologies where I learned:<br>` +
+                    `• Cloud architecture<br>` +
+                    `• DevOps workflows<br>` +
+                    `• Real-world deployment strategies<br>` +
+                    `• Hands-on AWS services`;
+            }
+            
+            // Greetings
+            if (q.includes('hi') || q.includes('hello') || q.includes('hey') || q.includes('good')) {
+                const greetings = [
+                    `Hello! 👋 How can I help you learn about GOBINATH today?`,
+                    `Hi there! Feel free to ask me about skills, projects, education, or contact info!`,
+                    `Hey! 🙌 I'm here to tell you all about GOBINATH's portfolio. What would you like to know?`
+                ];
+                return greetings[Math.floor(Math.random() * greetings.length)];
+            }
+            
+            // Thanks
+            if (q.includes('thank') || q.includes('thanks')) {
+                return `You're welcome! 😊 Feel free to ask more questions or connect with GOBINATH directly!`;
+            }
+            
+            // Bye
+            if (q.includes('bye') || q.includes('goodbye')) {
+                return `Goodbye! 👋 Thanks for visiting GOBINATH's portfolio. Feel free to come back anytime!`;
+            }
+
+            // Help
+            if (q.includes('help') || q.includes('what can you')) {
+                return `I can help you learn about:<br><br>` +
+                    `👤 <b>About Gobinath</b> - Who he is<br>` +
+                    `💻 <b>Skills</b> - Technical abilities<br>` +
+                    `📂 <b>Projects</b> - Work samples<br>` +
+                    `🎓 <b>Education</b> - Academic background<br>` +
+                    `💼 <b>Experience</b> - Work history<br>` +
+                    `📞 <b>Contact</b> - How to reach him<br><br>` +
+                    `Just ask any question or use the quick reply buttons!`;
+            }
+            
+            // Default response
+            return `I'm not sure about that specific question, but I can tell you about:<br><br>` +
+                `• <b>About Gobinath</b> - Who he is and what he does<br>` +
+                `• <b>Skills</b> - Technical abilities<br>` +
+                `• <b>Projects</b> - Work he's done<br>` +
+                `• <b>Education</b> - Academic background<br>` +
+                `• <b>Experience</b> - Professional experience<br>` +
+                `• <b>Contact</b> - How to reach him<br><br>` +
+                `Try asking one of these topics or use the quick reply buttons below!`;
+        }
+
+        function addMessage(content, isUser = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.innerHTML = content;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTyping() {
+            document.getElementById('typingIndicator').style.display = 'block';
+        }
+
+        function hideTyping() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            addMessage(question, true);
+            input.value = '';
+            
+            showTyping();
+            
+            setTimeout(() => {
+                hideTyping();
+                const response = generateResponse(question);
+                addMessage(response);
+            }, 800 + Math.random() * 400);
+        }
+
+        function askQuestion(question) {
+            document.getElementById('userInput').value = question;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
